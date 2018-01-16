@@ -50,8 +50,7 @@ var geocoder = {
             if (!fs.existsSync(GEONAMES_DUMP + '/alternate_names')) {
                 fs.mkdirSync(GEONAMES_DUMP + '/alternate_names');
             }
-            var zipFilename = GEONAMES_DUMP + '/alternate_names/' +
-                ALTERNATE_NAMES_FILE + '_' + now + '.zip';
+            const zipFilename = `${GEONAMES_DUMP}/alternate_names/${ALTERNATE_NAMES_FILE}_${now}.zip`;
             try {
                 fs.writeFileSync(zipFilename, body);
                 fs.createReadStream(zipFilename)
@@ -61,11 +60,10 @@ var geocoder = {
                     })
                     .on('close', function () {
                         fs.renameSync(filename, timestampedFilename);
-                        fs.unlinkSync(GEONAMES_DUMP + '/alternate_names/' +
-                            ALTERNATE_NAMES_FILE + '_' + now + '.zip');
+                        fs.unlinkSync(`${GEONAMES_DUMP}/alternate_names/${ALTERNATE_NAMES_FILE}_${now}.zip`);
                         console.log('Unzipped GeoNames alternate names data');
                         // Housekeeping, remove old files
-                        var currentFileName = path.basename(timestampedFilename);
+                        const currentFileName = path.basename(timestampedFilename);
                         fs.readdirSync(GEONAMES_DUMP + '/alternate_names').forEach(
                             function (file) {
                                 if (file !== currentFileName) {
@@ -305,45 +303,52 @@ var geocoder = {
         var that = this;
         async.parallel([
                 // Get GeoNames cities
-                function (waterfallCallback) {
+                function (cb) {
                     async.waterfall([
                         that._getGeoNamesCitiesData.bind(that),
                     ], function () {
-                        return waterfallCallback();
+                        return cb();
                     });
                 },
                 // Get GeoNames admin 1 codes
-                function (waterfallCallback) {
+                function (cb) {
                     async.waterfall([
                         that._getGeoNamesAdmin1CodesData.bind(that),
                     ], function () {
-                        return waterfallCallback();
+                        return cb();
                     });
                 },
                 // Get GeoNames admin 2 codes
-                function (waterfallCallback) {
+                function (cb) {
                     async.waterfall([
                         that._getGeoNamesAdmin2CodesData.bind(that),
                     ], function () {
-                        return waterfallCallback();
+                        return cb();
                     });
                 },
                 // Get GeoNames all countries
-                function (waterfallCallback) {
+                function (cb) {
                     async.waterfall([
                         that._getGeoNamesAllCountriesData.bind(that),
                     ], function () {
-                        return waterfallCallback();
+                        return cb();
                     });
                 },
                 // Get GeoNames alternate names
-                function (waterfallCallback) {
+                function (cb) {
                     async.waterfall([
                         that._getGeoNamesAlternateNamesData.bind(that),
                     ], function () {
-                        return waterfallCallback();
+                        return cb();
                     });
-                }
+                },
+                // function (cb) {
+                //     async.waterfall([
+                //         that._getGeoNamesCountriesData.bind(that),
+                //     ], () => {
+                //         return cb();
+                //     })
+                // }
             ],
             // Main callback
             function (err) {
